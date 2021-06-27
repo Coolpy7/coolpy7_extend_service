@@ -144,7 +144,7 @@ func handleAuth(l *net.UDPConn, a *net.UDPAddr, m *coap.Message) *coap.Message {
 //订阅主题处理函数
 //每个用户消息推送都会触发此事件
 //cid：客户端身份标识clientid, topic:主题，qos: 消息质量
-//返回值ok：当为true时，允许此操作，false为禁止此次订阅并强制断开客户端连接
+//返回值：无返回指令
 func handleSub(l *net.UDPConn, a *net.UDPAddr, m *coap.Message) *coap.Message {
 	var inMsg map[string]interface{}
 	err := json.Unmarshal(m.Payload, &inMsg)
@@ -152,28 +152,7 @@ func handleSub(l *net.UDPConn, a *net.UDPAddr, m *coap.Message) *coap.Message {
 		log.Println(err)
 		return nil
 	}
-	if !inMsg["ok"].(bool) {
-		//错误通知
-		log.Println("sub", inMsg)
-	} else {
-		//订阅通知消息
-		if m.IsConfirmable() {
-			outMsg := make(map[string]interface{})
-			//允许订阅设置为true,反之设置为false
-			outMsg["ok"] = true
-			//要求内核增加订阅主题设置为true
-			outMsg["rep"] = false
-			//内核对当前客户端增加订阅主题
-			//增加的主题就算ok设置为false也会生效，ok属性只对客户端请求订阅主题控制
-			tps := make([]string, 0)
-			tps = append(tps, "/aaa")
-			tps = append(tps, "/bbb")
-			outMsg["topic"] = tps
-			payload, _ := json.Marshal(&outMsg)
-			//回复内核
-			return response(m, payload)
-		}
-	}
+	log.Println(inMsg)
 	return nil
 }
 
@@ -187,37 +166,14 @@ func handleUnSub(l *net.UDPConn, a *net.UDPAddr, m *coap.Message) *coap.Message 
 		log.Println(err)
 		return nil
 	}
-	if !inMsg["ok"].(bool) {
-		//错误通知
-		log.Println("unsub", inMsg)
-	} else {
-		//取消订阅通知消息
-		if m.IsConfirmable() {
-			outMsg := make(map[string]interface{})
-			//回复回核操作是否成功
-			outMsg["ok"] = true
-			//要求内核增加退订主题设置为true
-			outMsg["rep"] = false
-			//内核对当前客户端增加退订主题
-			tps := make([]string, 0)
-			tps = append(tps, "/aaa")
-			tps = append(tps, "/bbb")
-			outMsg["topic"] = tps
-			payload, _ := json.Marshal(&outMsg)
-			//回复内核
-			return response(m, payload)
-		}
-	}
+	log.Println(inMsg)
 	return nil
 }
 
 //消息推送处理函数
 //每个用户消息推送都会触发此事件
 //cid：客户端身份标识clientid, topic:主题，qos: 消息质量, payload:消息内容
-//返回值ok：当为true时告知内核有消息处理返回
-//返回值rep：告知内核是否替换原消息内容发送，当为true时，内核会取消息中的payload替换原消息进和地发送
-//返回值topic：替换原topic，当rep为true时生效
-//返回值payload：替换原payload，当rep为true时生效
+//返回值：无返回指令
 func handlePub(l *net.UDPConn, a *net.UDPAddr, m *coap.Message) *coap.Message {
 	var inMsg map[string]interface{}
 	err := json.Unmarshal(m.Payload, &inMsg)
@@ -225,25 +181,7 @@ func handlePub(l *net.UDPConn, a *net.UDPAddr, m *coap.Message) *coap.Message {
 		log.Println(err)
 		return nil
 	}
-	if !inMsg["ok"].(bool) {
-		//错误通知
-		log.Println("pub", inMsg)
-	} else {
-		//请求消息
-		if m.IsConfirmable() {
-			outMsg := make(map[string]interface{})
-			//回复回核操作是否成功
-			outMsg["ok"] = true
-			//要求内核替换消息内容设置为true
-			outMsg["rep"] = false
-			////设置需要替换的消息内容
-			//outMsg["topic"] = inMsg["topic"]
-			//outMsg["payload"] = `{"test":"value"}`
-			payload, _ := json.Marshal(&outMsg)
-			//回复内核
-			return response(m, payload)
-		}
-	}
+	log.Println(inMsg)
 	return nil
 }
 
