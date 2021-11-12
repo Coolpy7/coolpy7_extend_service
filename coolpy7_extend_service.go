@@ -109,8 +109,6 @@ func handleAuth(l *net.UDPConn, a *net.UDPAddr, m *coap.Message) *coap.Message {
 	} else {
 		//请求消息
 		if m.IsConfirmable() {
-			msg := make(map[string]interface{})
-
 			////固定值判断认证登陆信息合法性
 			//if msg["cid"].(string) == "system" && msg["username"].(string) == "premissid" && msg["password"].(string) == "testpremissid" {
 			//	msg["ok"] = true
